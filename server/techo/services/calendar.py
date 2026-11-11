@@ -42,6 +42,7 @@ class CalendarService:
             }
             if pages is not None:
                 result["decorated_pages"] = PageService.decorated_pages(session, pages)
+                result["page_peeks"] = PageService.page_peeks(session, pages)
             return result
 
     def month(self, ym: str) -> dict:

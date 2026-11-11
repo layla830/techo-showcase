@@ -199,6 +199,8 @@ Python 3.12、FastAPI、SQLite 和原生网页。路径、域名及服务用户�
 
 `/month` 返回再加 `"decorated_pages": ["day:2026-11-08", "month:2026-11"]`：该月范围内（每一天的 `day:` 页加上 `month:` 页本身），至少有一个装修物件或一笔未删笔迹的页名，按字符串升序（所以 `day:` 页在前、`month:` 页在最后）。清空过的页、笔迹全删的页不在列表里。`/day` 不加这个字段。
 
+`/month` 同时返回 `"page_peeks"`：以页名为键，值为该页最多 6 个最上层的贴纸/照片物件，每项只含 `item_type`、`ref`、`x`、`y`、`scale`、`rotation`、`z`，用于月历格子的缩略图；文字和笔迹不进入 `page_peeks`。没有可展示物件的页不出现在这个对象里。
+
 ### 5.5 迁移与依赖
 
 - Alembic `0003` 只新建 `photos`、`pages`、`decorations`、`strokes` 四张表，不动旧数据；启动时自动跑。

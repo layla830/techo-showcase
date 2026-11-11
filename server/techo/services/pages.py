@@ -150,3 +150,32 @@ class PageService:
             select(Stroke.page).where(Stroke.page.in_(pages), Stroke.deleted_at.is_(None)),
         ).subquery()
         return sorted(session.scalars(select(decorated.c.page)))
+
+    @staticmethod
+    def page_peeks(session, pages: list[str], limit: int = 6) -> dict[str, list[dict]]:
+        # 月历格子是那一页的缩略图：只取最上层的贴纸和照片，每页最多 limit 个。
+        rows = session.execute(
+            select(Decoration)
+            .where(
+                Decoration.page.in_(pages),
+                Decoration.item_type.in_(("sticker", "photo")),
+                Decoration.ref.is_not(None),
+            )
+            .order_by(Decoration.page, Decoration.z.desc(), Decoration.id.desc())
+        )
+        result: dict[str, list[dict]] = {}
+        for (row,) in rows:
+            items = result.setdefault(row.page, [])
+            if len(items) < limit:
+                items.append(
+                    {
+                        "item_type": row.item_type,
+                        "ref": row.ref,
+                        "x": row.x,
+                        "y": row.y,
+                        "scale": row.scale,
+                        "rotation": row.rotation,
+                        "z": row.z,
+                    }
+                )
+        return result

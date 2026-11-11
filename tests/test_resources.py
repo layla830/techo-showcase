@@ -288,7 +288,16 @@ def test_month_and_day_include_intersecting_iso_weeks_across_year_and_month_boun
     for day in ("2020-12-31", "2021-01-01", "2021-01-31", "2021-02-01"):
         dated[day] = create_item(client, "notes", {"date": day, "text": day}, agent_headers)
     january = get_view(client, month="2021-01", headers=agent_headers)
-    assert set(january) == {"ym", "notes", "media", "events", "goals", "photos", "decorated_pages"}
+    assert set(january) == {
+        "ym",
+        "notes",
+        "media",
+        "events",
+        "goals",
+        "photos",
+        "decorated_pages",
+        "page_peeks",
+    }
     assert january["ym"] == "2021-01"
     assert set(january["goals"]["weeks"]) == {"2020-W53", "2021-W01", "2021-W02", "2021-W03", "2021-W04"}
     assert january["goals"]["weeks"]["2020-W53"] == [goals["2020-W53"]]

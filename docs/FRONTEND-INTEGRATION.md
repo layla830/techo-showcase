@@ -158,6 +158,8 @@ const response = await fetch(`/techo/api/v1/decorations?page=${encodeURIComponen
 
 `/month` 新增 `decorated_pages`：该月有装修物件或未删笔迹的页名列表（`day:` 页在前，`month:` 页在最后），用来在月历上打标记。
 
+`/month` 还返回 `page_peeks`：每页最多 6 个最上层的贴纸/照片物件，用于在月历格子里画那一页的小缩略图；文字、笔迹和物件的小字不在里面。
+
 ## 笔迹
 
 ```js

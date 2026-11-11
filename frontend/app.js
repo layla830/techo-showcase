@@ -107,6 +107,8 @@ function renderMonth() {
 
   const notes = byDate(month.notes), media = byDate(month.media), events = byDate(month.events);
   const decorated = new Set(month.decorated_pages || []);
+  // 格子是那一页的缩略图：贴纸和照片按装修页里的位置露出来，压在字底下。
+  const peeks = month.page_peeks || {};
   const lead = new Date(y, mo, 1).getDay();
   const n = new Date(y, mo + 1, 0).getDate();
   const cells = [];
@@ -126,12 +128,34 @@ function renderMonth() {
     const cap = window.innerWidth >= 700 ? 6 : 4;
     const shown = lines.slice(0, cap).join("") + (lines.length > cap ? `<div class="more">+${lines.length - cap}</div>` : "");
     const cls = ["d", date.getDay() === 0 && "sun", key === ymd(today) && "today"].filter(Boolean).join(" ");
-    cells.push(`<div class="${cls}" data-date="${key}"><div class="num"><span>${d}</span><span class="ann">${deco ? "✿" : ""}${ann ? "♡" : ""}</span></div>${shown}</div>`);
+    cells.push(`<div class="${cls}" data-date="${key}"><div class="num"><span>${d}</span><span class="ann">${deco ? "✿" : ""}${ann ? "♡" : ""}</span></div>${shown}${peeks[`day:${key}`] ? `<div class="page cs-page" data-peek="day:${key}" aria-hidden="true"></div>` : ""}</div>`);
   }
   while (cells.length % 7) cells.push('<div class="d blank"></div>');
   $("#grid").innerHTML = cells.join("");
+  if (typeof PAGE !== "undefined") {
+    const pages = [...$("#grid").querySelectorAll(".cs-page")];
+    pages.forEach((el) => PAGE.render(el, { items: peeks[el.dataset.peek], strokes: [] }));
+    requestAnimationFrame(() => pages.forEach(fitPeek));
+  }
   renderMonthGoals();
   renderSide();
+}
+// 把那一页上贴了东西的区域整体放大，摆进格子下半截；相对位置和大小不变。
+function fitPeek(el) {
+  const cell = el.parentNode, items = el.querySelectorAll(".pi");
+  if (!items.length || !cell) return;
+  const c = cell.getBoundingClientRect(), p = el.getBoundingClientRect();
+  let l = Infinity, t = Infinity, r = -Infinity, b = -Infinity;
+  items.forEach((n) => { const q = n.getBoundingClientRect(); l = Math.min(l, q.left); t = Math.min(t, q.top); r = Math.max(r, q.right); b = Math.max(b, q.bottom); });
+  const bw = r - l, bh = b - t;
+  if (!bw || !bh) return;
+  const pad = 4, availW = c.width - pad * 2, availH = c.height * 0.58;
+  const z = Math.min(availW / bw, availH / bh, 3);
+  const bx = l - p.left, by = t - p.top, elX = p.left - c.left, elY = p.top - c.top;
+  const tx = (c.width - bw * z) / 2 - elX - z * bx;
+  const ty = c.height - pad - elY - z * (by + bh);
+  el.style.transformOrigin = "0 0";
+  el.style.transform = `translate(${tx}px,${ty}px) scale(${z})`;
 }
 $("#grid").addEventListener("click", (e) => {
   const c = e.target.closest(".d[data-date]");
@@ -346,7 +370,11 @@ $("#tabs").addEventListener("click", (e) => {
 function renderTab() { if (tab === "week") renderWeek(); if (tab === "seen") renderSeen(); }
 async function refresh() { await loadMonth(); renderTab(); }
 let lastW = window.innerWidth;
-window.addEventListener("resize", () => { if ((lastW >= 700) !== (window.innerWidth >= 700) && month) renderMonth(); lastW = window.innerWidth; });
+window.addEventListener("resize", () => {
+  if ((lastW >= 700) !== (window.innerWidth >= 700) && month) renderMonth();
+  else document.querySelectorAll(".cs-page").forEach((el) => { el.style.transform = ""; fitPeek(el); });
+  lastW = window.innerWidth;
+});
 
 // ---------- 启动 ----------
 async function start() {
@@ -354,7 +382,18 @@ async function start() {
     await api("/me");
     $("#login").hidden = true; $("#book").hidden = false;
     await refresh();
-  } catch (e) { if (e instanceof AuthError) showLogin(); else toast(e.message); }
+  } catch (e) {
+    if (e instanceof AuthError) return showLogin();
+    // 服务器暂时连不上时别留一张空白页
+    let box = $("#offline");
+    if (!box) {
+      box = document.createElement("main");
+      box.id = "offline"; box.className = "view offline";
+      box.innerHTML = '<p>暂时连不上手帐。</p><button type="button">点这里重试</button>';
+      box.querySelector("button").addEventListener("click", () => { box.remove(); start(); });
+      document.body.appendChild(box);
+    }
+  }
 }
 start();
 if (!window.TECHO_DEMO && "serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});

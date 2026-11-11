@@ -420,6 +420,40 @@ def test_month_lists_decorated_pages(client, agent_headers):
     assert get_view(client, month="2026-12", headers=agent_headers)["decorated_pages"] == ["day:2026-12-01"]
 
 
+def test_month_peeks_top_stickers_and_photos_per_page(browser, agent_headers):
+    assert get_view(browser, month=MONTH, headers=agent_headers)["page_peeks"] == {}
+    photo = create_photo(browser, agent_headers)
+    put(
+        browser,
+        [
+            sticker(ref="pack:fig", z=0),
+            text_item(z=1),
+            sticker(ref="emoji:🌿", z=2),
+            {**sticker(), "item_type": "photo", "ref": str(photo["id"]), "z": 3},
+        ],
+        headers=agent_headers,
+        page="day:2026-11-11",
+    )
+    put(browser, [text_item()], headers=agent_headers, page="day:2026-11-12")
+    peeks = get_view(browser, month=MONTH, headers=agent_headers)["page_peeks"]
+    assert list(peeks) == ["day:2026-11-11"]
+    shown = peeks["day:2026-11-11"]
+    assert [(x["item_type"], x["ref"]) for x in shown] == [
+        ("photo", str(photo["id"])),
+        ("sticker", "emoji:🌿"),
+        ("sticker", "pack:fig"),
+    ]
+    assert shown[0] == {
+        "item_type": "photo",
+        "ref": str(photo["id"]),
+        "x": 0.5,
+        "y": 0.12,
+        "scale": 1,
+        "rotation": -4,
+        "z": 3,
+    }
+
+
 def test_decorations_and_strokes_stay_out_of_the_change_feed(browser, agent_headers):
     put(browser, [sticker()])
     created = add_strokes(browser, [stroke()]).json()["strokes"]

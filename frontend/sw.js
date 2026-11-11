@@ -1,5 +1,5 @@
 // 只缓存页面外壳，接口永远走网络
-const C = "techo-showcase-v1";
+const C = "techo-showcase-v2";
 const SHELL = ["./", "index.html", "style.css", "app.js", "stickers.js", "page.js", "icon.svg", "manifest.webmanifest"];
 self.addEventListener("install", (e) => { e.waitUntil(caches.open(C).then((c) => c.addAll(SHELL))); self.skipWaiting(); });
 self.addEventListener("activate", (e) => { e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k !== C).map((k) => caches.delete(k))))); self.clients.claim(); });

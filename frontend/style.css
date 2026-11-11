@@ -48,6 +48,11 @@ nav button.on{color:var(--w);font-weight:400}
 .d{min-height:96px;border-right:.5px solid var(--line);border-bottom:.5px solid var(--line);
   padding:4px 4px 5px;display:flex;flex-direction:column;gap:2px;cursor:pointer;overflow:hidden;min-width:0}
 .d.blank{cursor:default}
+.d{position:relative}
+.d>*:not(.cs-page){position:relative;z-index:1}
+/* 格子里的那一页：贴着格子底，超出的部分被格子裁掉 */
+.d .cs-page{position:absolute;left:0;right:0;bottom:0;width:100%;background:none;pointer-events:none;z-index:0;overflow:visible}
+.d .cs-page .ink{display:none}
 .d .num{font-size:9.5px;display:flex;justify-content:space-between;margin-bottom:2px}
 .d.sun .num span:first-child{color:var(--blue)}
 .d.today{background:rgba(255,255,255,.09)}
@@ -183,3 +188,6 @@ nav button.on{color:var(--w);font-weight:400}
 @media (min-width:700px){ .ed-pane{height:150px} .tray-grid{grid-template-columns:repeat(10,1fr)} .ed-stage{padding:12px 40px} }
 .ed-sel[hidden] + .strong{margin-left:auto}
 .page{background-color:#686868;background-image:radial-gradient(rgba(255,255,255,.16) .7px,transparent .9px);background-size:5% 3.75%;background-position:2.5% 1.9%}
+
+.offline{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;min-height:60vh;font-family:var(--cn);color:var(--w2);font-size:13px}
+.offline button{color:var(--w);border-bottom:.5px solid var(--w2);padding:4px 2px;font-size:13px}

@@ -26,6 +26,7 @@ window.TECHO_DEMO = true;
     const day = `${ym}-${pad(isCurrent ? now.getDate() : 8)}`;
     const common = {created_at:`${day}T09:00:00+08:00`, updated_at:`${day}T09:00:00+08:00`, deleted_at:null};
     const photo = {...common, id:901, date:day, author:"human", updated_by:"human", caption:"示例照片", width:800, height:800, hash:"demo-photo"};
+    const peekItems = demoItems.filter((x) => x.item_type !== "text").map(({item_type,ref,x,y,scale,rotation,z}) => ({item_type,ref,x,y,scale,rotation,z}));
     const weeks = {};
     const first = new Date(y, m - 1, 1), start = new Date(first);
     start.setDate(1 - (first.getDay() + 6) % 7);
@@ -36,7 +37,7 @@ window.TECHO_DEMO = true;
       {...common,id:2,date:day,author:"agent",updated_by:"agent",text:"示例补记：可以把喜欢的配色加入下周灵感清单。",mood:null}
     ],media:[{...common,id:3,date:day,author:"human",updated_by:"human",kind:"book",title:"设计入门 · 虚构示例",note:"阅读摘记"}],
       events:[{...common,id:4,date:day,author:"human",updated_by:"human",kind:"plan",title:"参观示例展览",time:"14:00",place:"示例展厅"}],
-      goals:{month:[{...common,id:12,author:"human",updated_by:"human",scope:"month",period:ym,text:"完成一个创意练习（示例）",status:"open",sort:0}],weeks},photos:isCurrent ? [photo] : [],decorated_pages:isCurrent ? [`day:${day}`] : []};
+      goals:{month:[{...common,id:12,author:"human",updated_by:"human",scope:"month",period:ym,text:"完成一个创意练习（示例）",status:"open",sort:0}],weeks},photos:isCurrent ? [photo] : [],decorated_pages:isCurrent ? [`day:${day}`] : [],page_peeks:isCurrent ? {[`day:${day}`]: peekItems} : {}};
   }
   window.fetch = async (input, init = {}) => {
     const url = new URL(typeof input === "string" || input instanceof URL ? input : input.url, location.href);
