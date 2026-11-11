@@ -1,0 +1,1 @@
+"""Techo journal backend."""

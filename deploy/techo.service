@@ -1,0 +1,29 @@
+# New-instance example only. Review paths and create a dedicated service user first.
+[Unit]
+Description=Techo personal journal
+After=network.target
+
+[Service]
+Type=simple
+User=techo
+Group=techo
+WorkingDirectory=/srv/techo
+# EnvironmentFile is not a shell: bcrypt dollar signs are literal.
+EnvironmentFile=/srv/techo/.env
+Environment=PYTHONPATH=/srv/techo/server
+Environment=PYTHONDONTWRITEBYTECODE=1
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/srv/techo/.venv/bin/uvicorn techo.app:create_app --factory --host 127.0.0.1 --port 8875 --workers 1 --proxy-headers --forwarded-allow-ips=127.0.0.1
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/srv/techo/data
+Restart=on-failure
+RestartSec=5s
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
